@@ -2,46 +2,44 @@
 
 ## Introduction
 
-This document provides a comprehensive overview of the actors involved in the smart contract system and outlines their respective privileges and roles.
-Different `roles` (we call them `domain`) are granted via `AddressManager` contract's `setAddress()` function. Idea is very similar Optimism's `AddressManager` except that we use the `chainId + domainName` as the key for a given address. We need so, because for bridging purposes, the destination chain's bridge address needs to be included signaling the message hash is tamper-proof.
-Every contract which needs some role-based authentication, needs to inherit from `AddressResolver` contract, which will serve as a 'middleman/lookup' by querying the `AddressManager` per given address is allowed to act on behalf of that domain or not.
+This document provides a comprehensive overview of the actors involved in the smart contract system and outlines their respective privileges and roles. Different `roles` (referred to as `domains`) are granted via the `AddressManager` contract's `setAddress()` function. The concept is very similar to Optimism's `AddressManager`, except that we use the `chainId + domainName` as the key for a given address. This is necessary for bridging purposes, as the destination chain's bridge address needs to be included to ensure the message hash is tamper-proof. Every contract that requires role-based authentication needs to inherit from the `AddressResolver` contract, which serves as a 'middleman/lookup' by querying the `AddressManager` to determine if a given address is allowed to act on behalf of that domain or not.
 
 ## 1. Domains (≈role per chainId)
 
-In the context of the smart contract system, various actors play distinct roles. Each actor is associated with specific responsibilities and privileges within the system. When there is a modifier called `onlyFromNamed` or `onlyFromNamed2`, it means we are checking access through the before mentioned contracts (`AddressResolver` and `AddressManager`), and one function maximum allows up to 2 domains (right now, but it might change when e.g.`DAO` is set up) can be given access.
+In the context of the smart contract system, various actors play distinct roles. Each actor is associated with specific responsibilities and privileges within the system. When there is a modifier called `onlyFromNamed` or `onlyFromNamed2`, it means access is being checked through the aforementioned contracts (`AddressResolver` and `AddressManager`). Each function currently allows up to 2 domains access, but this may change when, for example, a `DAO` is set up.
 
 ### 1.1 Taiko
 
-- **Role**: This domain role is given to TaikoL1 smart contract.
+- **Role**: This domain role is given to the TaikoL1 smart contract.
 - **Privileges**:
-  - Possibility to mint/burn the taiko token
-  - Possibility to mint/burn erc20 tokens (I think we should remove this privilege)
+  - Possibility to mint/burn the Taiko token
+  - Possibility to mint/burn ERC20 tokens (Note: Consider removing this privilege)
 
 ### 1.2 Bridge
 
-- **Role**: This domain role is given to Bridge smart contracts (both chains).
+- **Role**: This domain role is given to Bridge smart contracts (on both chains).
 - **Privileges**:
-  - The right to trigger transferring/minting the tokens (on destination chain) (be it ERC20, ERC721, ERC1155) from the vault contracts
+  - The right to trigger transferring/minting tokens (on the destination chain) (be it ERC20, ERC721, ERC1155) from the vault contracts
   - The right to trigger releasing the custodied assets on the source chain (if bridging is not successful)
 
 ### 1.3 ERCXXX_Vault
 
-- **Role**: This role is given to respective token vault contracts (ERC20, ERC721, ERC1155)
+- **Role**: This role is given to respective token vault contracts (ERC20, ERC721, ERC1155).
 - **Privileges**:
-  - Part of token bridging, the possibility to burn and mint the respective standard tokens (no autotelic minting/burning)
+  - Part of token bridging, including the possibility to burn and mint the respective standard tokens (no autotelic minting/burning)
 
 ## 2. Different access modifiers
 
-Beside the `onlyFromNamed` or `onlyFromNamed2` modifiers, we have others such as:
+In addition to the `onlyFromNamed` or `onlyFromNamed2` modifiers, we have others such as:
 
 ### 2.1 onlyOwner
 
-- **Description**: Only owner can be granted access.
+- **Description**: Only the owner can be granted access.
 - **Associated contracts**: TaikoToken, AddressManager
 
 ### 2.2 onlyAuthorized
 
-- **Description**: Only authorized (by owner) can be granted access - the address shall be a smart contract. (`Bridge` in our case)
+- **Description**: Only authorized entities (approved by the owner) can be granted access; the address must be a smart contract. (e.g., `Bridge` in our case)
 
 ## 3. Upgradeable Procedures
 
@@ -49,7 +47,7 @@ The smart contract system incorporates upgradeable procedures to ensure flexibil
 
 ### 3.1 Deployment Scripts
 
-- Deployment scripts are visible in the `packages/protocol/scripts` folder, encompassing both deployment and upgrade scripts for easy reference and replication.
+- Deployment scripts are located in the `packages/protocol/scripts` folder, encompassing both deployment and upgrade scripts for easy reference and replication.
 
 ### 3.2 Transparent Upgradeability
 
